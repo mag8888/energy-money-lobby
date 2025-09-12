@@ -224,7 +224,7 @@ app.get('/', (req, res) => {
             
             .main-content {
                 display: grid;
-                grid-template-columns: 1fr 1fr;
+                grid-template-columns: 1fr 2fr 1fr;
                 gap: 2rem;
                 margin-bottom: 2rem;
             }
@@ -366,12 +366,12 @@ app.get('/', (req, res) => {
             
             .board-container {
                 position: relative;
-                width: 400px;
-                height: 400px;
+                width: 600px;
+                height: 600px;
                 margin: 0 auto;
-                background: white;
+                background: #1a1a2e;
                 border-radius: 20px;
-                box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+                box-shadow: 0 10px 30px rgba(0,0,0,0.5);
                 border: 4px solid #333;
             }
             
@@ -384,24 +384,47 @@ app.get('/', (req, res) => {
             
             .outer-cell {
                 position: absolute;
-                width: 50px;
-                height: 50px;
-                border-radius: 8px;
+                width: 40px;
+                height: 40px;
+                border-radius: 6px;
                 display: flex;
                 flex-direction: column;
                 align-items: center;
                 justify-content: center;
-                font-size: 10px;
+                font-size: 8px;
                 font-weight: bold;
                 color: white;
                 text-align: center;
                 cursor: pointer;
                 transition: all 0.3s ease;
-                border: 2px solid rgba(255,255,255,0.3);
+                border: 1px solid rgba(255,255,255,0.2);
             }
             
             .outer-cell:hover {
                 transform: scale(1.1);
+                z-index: 10;
+            }
+            
+            .special-zone {
+                position: absolute;
+                width: 80px;
+                height: 60px;
+                border-radius: 8px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                font-size: 8px;
+                font-weight: bold;
+                color: white;
+                text-align: center;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                border: 2px solid #ff6b6b;
+            }
+            
+            .special-zone:hover {
+                transform: scale(1.05);
                 z-index: 10;
             }
             
@@ -410,16 +433,48 @@ app.get('/', (req, res) => {
                 top: 50%;
                 left: 50%;
                 transform: translate(-50%, -50%);
-                width: 60%;
-                height: 60%;
-                background: #f8f9fa;
-                border-radius: 15px;
-                border: 2px solid #333;
-                display: grid;
-                grid-template-columns: repeat(6, 1fr);
-                grid-template-rows: repeat(4, 1fr);
-                gap: 2px;
-                padding: 10px;
+                width: 200px;
+                height: 200px;
+                background: #2d2d44;
+                border-radius: 50%;
+                border: 3px solid #ffd700;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            
+            .center-element {
+                width: 120px;
+                height: 120px;
+                background: linear-gradient(45deg, #ffd700, #ffed4e);
+                border-radius: 50%;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                font-size: 24px;
+                font-weight: bold;
+                color: #333;
+                box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+                position: relative;
+            }
+            
+            .center-element::before {
+                content: '1';
+                font-size: 36px;
+                font-weight: bold;
+            }
+            
+            .center-element::after {
+                content: '$$$$';
+                position: absolute;
+                top: -10px;
+                left: -10px;
+                right: -10px;
+                bottom: -10px;
+                background: radial-gradient(circle, transparent 30%, rgba(255, 215, 0, 0.3) 70%);
+                border-radius: 50%;
+                pointer-events: none;
             }
             
             .inner-cell {
@@ -446,6 +501,90 @@ app.get('/', (req, res) => {
                 margin-top: 15px;
                 color: #666;
                 font-size: 0.9rem;
+            }
+            
+            .financial-panel {
+                background: #2d2d44;
+                border-radius: 15px;
+                padding: 1.5rem;
+                color: white;
+            }
+            
+            .financial-section {
+                margin-bottom: 1.5rem;
+                padding: 1rem;
+                background: rgba(255,255,255,0.1);
+                border-radius: 8px;
+            }
+            
+            .financial-title {
+                font-size: 1.2rem;
+                font-weight: bold;
+                margin-bottom: 0.5rem;
+                color: #ffd700;
+            }
+            
+            .financial-item {
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 0.5rem;
+                font-size: 0.9rem;
+            }
+            
+            .financial-value {
+                font-weight: bold;
+            }
+            
+            .income { color: #2ecc71; }
+            .expenses { color: #e74c3c; }
+            .assets { color: #2ecc71; }
+            .credit { color: #9b59b6; }
+            
+            .button-group {
+                display: flex;
+                flex-direction: column;
+                gap: 0.5rem;
+                margin-top: 1rem;
+            }
+            
+            .btn {
+                padding: 0.5rem 1rem;
+                border: none;
+                border-radius: 6px;
+                font-weight: bold;
+                cursor: pointer;
+                transition: all 0.3s ease;
+            }
+            
+            .btn-success {
+                background: #2ecc71;
+                color: white;
+            }
+            
+            .btn-danger {
+                background: #e74c3c;
+                color: white;
+            }
+            
+            .btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            }
+            
+            .turn-status {
+                background: #9b59b6;
+                padding: 1rem;
+                border-radius: 8px;
+                text-align: center;
+                margin-top: 1rem;
+            }
+            
+            .turn-waiting {
+                background: #95a5a6;
+                padding: 0.5rem;
+                border-radius: 6px;
+                margin-top: 0.5rem;
+                font-size: 0.8rem;
             }
             
             .chat-section {
@@ -537,14 +676,35 @@ app.get('/', (req, res) => {
                 }
                 
                 .board-container {
-                    width: 300px;
-                    height: 300px;
+                    width: 400px;
+                    height: 400px;
                 }
                 
                 .outer-cell {
-                    width: 35px;
-                    height: 35px;
-                    font-size: 8px;
+                    width: 30px;
+                    height: 30px;
+                    font-size: 6px;
+                }
+                
+                .special-zone {
+                    width: 60px;
+                    height: 45px;
+                    font-size: 6px;
+                }
+                
+                .center-element {
+                    width: 80px;
+                    height: 80px;
+                    font-size: 16px;
+                }
+                
+                .financial-panel {
+                    padding: 1rem;
+                }
+                
+                .financial-section {
+                    padding: 0.5rem;
+                    margin-bottom: 1rem;
                 }
             }
         </style>
@@ -585,10 +745,72 @@ app.get('/', (req, res) => {
                                 <!-- 52 outer cells will be rendered here -->
                             </div>
                             <div class="inner-board" id="innerBoard">
-                                <!-- 24 inner cells will be rendered here -->
+                                <div class="center-element"></div>
                             </div>
                         </div>
                         <p class="game-info">Полноценное игровое поле с 52 внешними и 24 внутренними клетками</p>
+                    </div>
+                </div>
+                
+                <!-- Financial Panel -->
+                <div class="financial-panel">
+                    <h2>💰 Финансы</h2>
+                    
+                    <div class="financial-section">
+                        <div class="financial-title">Доходы и расходы</div>
+                        <div class="financial-item">
+                            <span>Доход:</span>
+                            <span class="financial-value income">$0</span>
+                        </div>
+                        <div class="financial-item">
+                            <span>Расходы:</span>
+                            <span class="financial-value expenses">$0</span>
+                        </div>
+                        <div class="financial-item">
+                            <span>$ PAYDAY:</span>
+                            <span class="financial-value income">$0/мес</span>
+                        </div>
+                    </div>
+                    
+                    <div class="financial-section">
+                        <div class="financial-title">Кредиты</div>
+                        <div class="financial-item">
+                            <span>Кредит:</span>
+                            <span class="financial-value credit">$0</span>
+                        </div>
+                        <div class="financial-item">
+                            <span>Макс. кредит:</span>
+                            <span class="financial-value credit">$0</span>
+                        </div>
+                        <div class="button-group">
+                            <button class="btn btn-success">✔ Без кредитов</button>
+                            <button class="btn btn-danger">Взять</button>
+                        </div>
+                        <small>Нажмите для открытия банковских операций</small>
+                    </div>
+                    
+                    <div class="financial-section">
+                        <div class="financial-title">Активы</div>
+                        <div class="financial-item">
+                            <span>Активы:</span>
+                            <span class="financial-value assets">$0</span>
+                        </div>
+                        <div class="financial-item">
+                            <span>Доход: $0/мес</span>
+                        </div>
+                    </div>
+                    
+                    <div class="turn-status">
+                        <div>ОЖИДАНИЕ ХОДА</div>
+                        <div class="turn-waiting">НЕ ВАШ ХОД</div>
+                    </div>
+                    
+                    <div class="financial-section">
+                        <div class="financial-title">⏰ Время хода</div>
+                        <div class="financial-item">
+                            <span>Осталось:</span>
+                            <span class="financial-value">--:--</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -676,37 +898,71 @@ app.get('/', (req, res) => {
             // Game board rendering
             function renderGameBoard() {
                 const outerBoard = document.getElementById('outerBoard');
-                const innerBoard = document.getElementById('innerBoard');
                 
-                // Render outer cells (52 cells)
+                // Render outer cells (52 cells) in rectangular format
                 outerBoard.innerHTML = '';
+                
+                // Add special zones first
+                const specialZones = [
+                    { name: 'Большая сделка', icon: '$', color: '#4a90e2', x: 10, y: 20, cards: '24 карт' },
+                    { name: 'Малая сделка', icon: '💼', color: '#2ecc71', x: 80, y: 10, cards: '62 карт' },
+                    { name: 'Расходы', icon: '🛒', color: '#e74c3c', x: 10, y: 80, cards: '24 карт' },
+                    { name: 'Рынок', icon: '🏢', color: '#3498db', x: 80, y: 80, cards: '24 карт' }
+                ];
+                
+                specialZones.forEach(zone => {
+                    const zoneElement = document.createElement('div');
+                    zoneElement.className = 'special-zone';
+                    zoneElement.style.backgroundColor = zone.color;
+                    zoneElement.style.left = \`\${zone.x}%\`;
+                    zoneElement.style.top = \`\${zone.y}%\`;
+                    zoneElement.innerHTML = \`
+                        <div>\${zone.icon}</div>
+                        <div>\${zone.name}</div>
+                        <div style="font-size: 6px;">\${zone.cards}</div>
+                    \`;
+                    outerBoard.appendChild(zoneElement);
+                });
+                
+                // Render outer cells in rectangular pattern
                 OUTER_CELLS.forEach((cell, index) => {
                     const cellElement = document.createElement('div');
                     cellElement.className = 'outer-cell';
                     cellElement.style.backgroundColor = cell.color;
-                    cellElement.innerHTML = \`<div>\${cell.icon}</div><div>\${cell.name}</div>\`;
+                    cellElement.innerHTML = \`
+                        <div>\${cell.icon}</div>
+                        <div style="font-size: 6px;">\${cell.name}</div>
+                    \`;
                     
-                    // Position calculation for outer cells
-                    const angle = (index / OUTER_CELLS.length) * 2 * Math.PI;
-                    const radius = 45; // Percentage from center
-                    const x = 50 + radius * Math.cos(angle - Math.PI / 2);
-                    const y = 50 + radius * Math.sin(angle - Math.PI / 2);
+                    // Position calculation for rectangular board
+                    let x, y;
+                    const cellSize = 40;
+                    const margin = 20;
+                    const boardWidth = 600;
+                    const boardHeight = 600;
                     
-                    cellElement.style.left = \`\${x}%\`;
-                    cellElement.style.top = \`\${y}%\`;
-                    cellElement.style.transform = 'translate(-50%, -50%)';
+                    if (index < 14) {
+                        // Top row
+                        x = margin + (index * (boardWidth - 2 * margin - cellSize) / 13);
+                        y = margin;
+                    } else if (index < 26) {
+                        // Right column
+                        x = boardWidth - margin - cellSize;
+                        y = margin + ((index - 14) * (boardHeight - 2 * margin - cellSize) / 11);
+                    } else if (index < 40) {
+                        // Bottom row
+                        x = boardWidth - margin - cellSize - ((index - 26) * (boardWidth - 2 * margin - cellSize) / 13);
+                        y = boardHeight - margin - cellSize;
+                    } else {
+                        // Left column
+                        x = margin;
+                        y = boardHeight - margin - cellSize - ((index - 40) * (boardHeight - 2 * margin - cellSize) / 11);
+                    }
+                    
+                    cellElement.style.left = \`\${x}px\`;
+                    cellElement.style.top = \`\${y}px\`;
                     
                     outerBoard.appendChild(cellElement);
-                });
-                
-                // Render inner cells (24 cells)
-                innerBoard.innerHTML = '';
-                INNER_CELLS.forEach((cell) => {
-                    const cellElement = document.createElement('div');
-                    cellElement.className = 'inner-cell';
-                    cellElement.style.backgroundColor = cell.color;
-                    cellElement.innerHTML = \`<div>\${cell.icon}</div><div>\${cell.name}</div>\`;
-                    innerBoard.appendChild(cellElement);
                 });
             }
             
