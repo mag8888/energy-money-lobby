@@ -1263,6 +1263,480 @@ function getRoomList() {
   return roomList;
 }
 
+// Original board page
+app.get('/original-board', (req, res) => {
+  res.send(`
+    <!DOCTYPE html>
+    <html lang="ru">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Original Board - Energy of Money</title>
+        <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+            
+            body {
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+                min-height: 100vh;
+                padding: 20px;
+                color: white;
+            }
+            
+            .container {
+                max-width: 1200px;
+                margin: 0 auto;
+            }
+            
+            .header {
+                text-align: center;
+                margin-bottom: 2rem;
+            }
+            
+            .loading-text {
+                font-size: 1.5rem;
+                margin-bottom: 1rem;
+                color: #4CAF50;
+            }
+            
+            .subtitle {
+                font-size: 1rem;
+                color: #B0BEC5;
+                margin-bottom: 2rem;
+            }
+            
+            .debug-panel {
+                background: rgba(0, 0, 0, 0.3);
+                border: 2px solid #333;
+                border-radius: 10px;
+                padding: 20px;
+                margin-bottom: 2rem;
+                backdrop-filter: blur(10px);
+            }
+            
+            .debug-title {
+                font-size: 1.2rem;
+                font-weight: bold;
+                margin-bottom: 15px;
+                color: #FFD700;
+            }
+            
+            .debug-item {
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 10px;
+                font-size: 1rem;
+            }
+            
+            .debug-label {
+                color: #B0BEC5;
+            }
+            
+            .debug-value {
+                color: #4CAF50;
+                font-weight: bold;
+            }
+            
+            .debug-value.disconnected {
+                color: #F44336;
+            }
+            
+            .board-container {
+                position: relative;
+                width: 800px;
+                height: 800px;
+                margin: 0 auto;
+                background: #1a1a2e;
+                border-radius: 20px;
+                box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+                border: 4px solid #333;
+            }
+            
+            .outer-board {
+                position: relative;
+                width: 100%;
+                height: 100%;
+                border-radius: 20px;
+            }
+            
+            .outer-cell {
+                position: absolute;
+                width: 50px;
+                height: 50px;
+                border-radius: 8px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                font-size: 10px;
+                font-weight: bold;
+                color: white;
+                text-align: center;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                border: 2px solid rgba(255,255,255,0.2);
+                box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            }
+            
+            .outer-cell:hover {
+                transform: scale(1.1);
+                z-index: 10;
+                box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+            }
+            
+            .special-zone {
+                position: absolute;
+                width: 100px;
+                height: 80px;
+                border-radius: 10px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                font-size: 10px;
+                font-weight: bold;
+                color: white;
+                text-align: center;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                border: 3px solid #ff6b6b;
+                box-shadow: 0 4px 16px rgba(255, 107, 107, 0.3);
+            }
+            
+            .special-zone:hover {
+                transform: scale(1.05);
+                z-index: 10;
+                box-shadow: 0 6px 20px rgba(255, 107, 107, 0.5);
+            }
+            
+            .inner-board {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                width: 300px;
+                height: 300px;
+                background: #2d2d44;
+                border-radius: 50%;
+                border: 4px solid #ffd700;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                box-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+            }
+            
+            .center-element {
+                width: 150px;
+                height: 150px;
+                background: linear-gradient(45deg, #ffd700, #ffed4e);
+                border-radius: 50%;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                font-size: 28px;
+                font-weight: bold;
+                color: #333;
+                box-shadow: 0 0 25px rgba(255, 215, 0, 0.6);
+                position: relative;
+            }
+            
+            .center-element::before {
+                content: '1';
+                font-size: 42px;
+                font-weight: bold;
+            }
+            
+            .center-element::after {
+                content: '$$$$';
+                position: absolute;
+                top: -15px;
+                left: -15px;
+                right: -15px;
+                bottom: -15px;
+                background: radial-gradient(circle, transparent 30%, rgba(255, 215, 0, 0.4) 70%);
+                border-radius: 50%;
+                pointer-events: none;
+            }
+            
+            .inner-cell {
+                position: absolute;
+                width: 35px;
+                height: 35px;
+                background: #ddd;
+                border-radius: 8px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                font-size: 8px;
+                font-weight: bold;
+                color: #333;
+                text-align: center;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                border: 2px solid #999;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            }
+            
+            .inner-cell:hover {
+                transform: scale(1.1);
+                z-index: 10;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            }
+            
+            .loading-spinner {
+                display: inline-block;
+                width: 20px;
+                height: 20px;
+                border: 3px solid #f3f3f3;
+                border-top: 3px solid #4CAF50;
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+                margin-right: 10px;
+            }
+            
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+            
+            .status-indicator {
+                display: inline-block;
+                width: 12px;
+                height: 12px;
+                border-radius: 50%;
+                margin-right: 8px;
+            }
+            
+            .status-connected {
+                background: #4CAF50;
+                box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+            }
+            
+            .status-disconnected {
+                background: #F44336;
+                box-shadow: 0 0 10px rgba(244, 67, 54, 0.5);
+            }
+            
+            @media (max-width: 768px) {
+                .board-container {
+                    width: 600px;
+                    height: 600px;
+                }
+                
+                .outer-cell {
+                    width: 35px;
+                    height: 35px;
+                    font-size: 8px;
+                }
+                
+                .special-zone {
+                    width: 80px;
+                    height: 60px;
+                    font-size: 8px;
+                }
+                
+                .center-element {
+                    width: 100px;
+                    height: 100px;
+                    font-size: 20px;
+                }
+                
+                .inner-cell {
+                    width: 25px;
+                    height: 25px;
+                    font-size: 6px;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <div class="loading-text">
+                    <span class="loading-spinner"></span>
+                    Загрузка полной игровой доски...
+                </div>
+                <div class="subtitle">Подготавливаем 24 внутренних + 52 внешних клетки</div>
+            </div>
+            
+            <div class="debug-panel">
+                <div class="debug-title">🔧 DEBUG PANEL</div>
+                <div class="debug-item">
+                    <span class="debug-label">Connected:</span>
+                    <span class="debug-value disconnected" id="connectionStatus">❌</span>
+                </div>
+                <div class="debug-item">
+                    <span class="debug-label">Rooms:</span>
+                    <span class="debug-value" id="roomsCount">0</span>
+                </div>
+                <div class="debug-item">
+                    <span class="debug-label">Current:</span>
+                    <span class="debug-value" id="currentRoom">none</span>
+                </div>
+            </div>
+            
+            <div class="board-container">
+                <div class="outer-board" id="outerBoard">
+                    <!-- 52 outer cells will be rendered here -->
+                </div>
+                <div class="inner-board" id="innerBoard">
+                    <div class="center-element"></div>
+                    <!-- 24 inner cells will be rendered here -->
+                </div>
+            </div>
+        </div>
+        
+        <script>
+            // Game cells data
+            const INNER_CELLS = ${JSON.stringify(INNER_CELLS)};
+            const OUTER_CELLS = ${JSON.stringify(OUTER_CELLS)};
+            
+            // Socket connection
+            const socket = io();
+            let isConnected = false;
+            let roomsCount = 0;
+            
+            // Update debug panel
+            function updateDebugPanel() {
+                document.getElementById('connectionStatus').textContent = isConnected ? '✅' : '❌';
+                document.getElementById('connectionStatus').className = isConnected ? 'debug-value status-connected' : 'debug-value disconnected';
+                document.getElementById('roomsCount').textContent = roomsCount;
+            }
+            
+            // Socket events
+            socket.on('connect', () => {
+                isConnected = true;
+                updateDebugPanel();
+                console.log('Connected to server');
+            });
+            
+            socket.on('disconnect', () => {
+                isConnected = false;
+                updateDebugPanel();
+                console.log('Disconnected from server');
+            });
+            
+            socket.on('updateRoomList', (rooms) => {
+                roomsCount = Object.keys(rooms).length;
+                updateDebugPanel();
+            });
+            
+            // Render game board
+            function renderGameBoard() {
+                const outerBoard = document.getElementById('outerBoard');
+                const innerBoard = document.getElementById('innerBoard');
+                
+                // Clear existing content
+                outerBoard.innerHTML = '';
+                innerBoard.innerHTML = '<div class="center-element"></div>';
+                
+                // Add special zones
+                const specialZones = [
+                    { name: 'Большая сделка', icon: '$', color: '#4a90e2', x: 5, y: 15, cards: '24 карт' },
+                    { name: 'Малая сделка', icon: '💼', color: '#2ecc71', x: 75, y: 5, cards: '62 карт' },
+                    { name: 'Расходы', icon: '🛒', color: '#e74c3c', x: 5, y: 75, cards: '24 карт' },
+                    { name: 'Рынок', icon: '🏢', color: '#3498db', x: 75, y: 75, cards: '24 карт' }
+                ];
+                
+                specialZones.forEach(zone => {
+                    const zoneElement = document.createElement('div');
+                    zoneElement.className = 'special-zone';
+                    zoneElement.style.backgroundColor = zone.color;
+                    zoneElement.style.left = \`\${zone.x}%\`;
+                    zoneElement.style.top = \`\${zone.y}%\`;
+                    zoneElement.innerHTML = \`
+                        <div>\${zone.icon}</div>
+                        <div>\${zone.name}</div>
+                        <div style="font-size: 8px;">\${zone.cards}</div>
+                    \`;
+                    outerBoard.appendChild(zoneElement);
+                });
+                
+                // Render outer cells (52 cells)
+                OUTER_CELLS.forEach((cell, index) => {
+                    const cellElement = document.createElement('div');
+                    cellElement.className = 'outer-cell';
+                    cellElement.style.backgroundColor = cell.color;
+                    cellElement.innerHTML = \`
+                        <div>\${cell.icon}</div>
+                        <div style="font-size: 8px;">\${cell.name}</div>
+                    \`;
+                    
+                    // Position calculation for rectangular board
+                    let x, y;
+                    const cellSize = 50;
+                    const margin = 30;
+                    const boardWidth = 800;
+                    const boardHeight = 800;
+                    
+                    if (index < 14) {
+                        // Top row (1-14)
+                        x = margin + (index * (boardWidth - 2 * margin - cellSize) / 13);
+                        y = margin;
+                    } else if (index < 26) {
+                        // Right column (15-26)
+                        x = boardWidth - margin - cellSize;
+                        y = margin + ((index - 14) * (boardHeight - 2 * margin - cellSize) / 11);
+                    } else if (index < 40) {
+                        // Bottom row (27-40)
+                        x = boardWidth - margin - cellSize - ((index - 26) * (boardWidth - 2 * margin - cellSize) / 13);
+                        y = boardHeight - margin - cellSize;
+                    } else {
+                        // Left column (41-52)
+                        x = margin;
+                        y = boardHeight - margin - cellSize - ((index - 40) * (boardHeight - 2 * margin - cellSize) / 11);
+                    }
+                    
+                    cellElement.style.left = \`\${x}px\`;
+                    cellElement.style.top = \`\${y}px\`;
+                    
+                    outerBoard.appendChild(cellElement);
+                });
+                
+                // Render inner cells (24 cells)
+                INNER_CELLS.forEach((cell, index) => {
+                    const cellElement = document.createElement('div');
+                    cellElement.className = 'inner-cell';
+                    cellElement.style.backgroundColor = cell.color;
+                    cellElement.innerHTML = \`
+                        <div>\${cell.icon}</div>
+                        <div style="font-size: 6px;">\${cell.name}</div>
+                    \`;
+                    
+                    // Position calculation for circular inner board
+                    const centerX = 150; // Half of inner board width
+                    const centerY = 150; // Half of inner board height
+                    const radius = 100; // Distance from center
+                    const angle = (index * 360 / 24) * (Math.PI / 180); // Convert to radians
+                    
+                    const x = centerX + radius * Math.cos(angle) - 17.5; // 17.5 is half of cell width
+                    const y = centerY + radius * Math.sin(angle) - 17.5; // 17.5 is half of cell height
+                    
+                    cellElement.style.left = \`\${x}px\`;
+                    cellElement.style.top = \`\${y}px\`;
+                    
+                    innerBoard.appendChild(cellElement);
+                });
+            }
+            
+            // Initialize
+            document.addEventListener('DOMContentLoaded', () => {
+                renderGameBoard();
+                socket.emit('getRoomList');
+            });
+        </script>
+    </body>
+    </html>
+  `);
+});
+
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.json({
