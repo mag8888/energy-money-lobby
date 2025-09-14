@@ -1263,6 +1263,11 @@ function getRoomList() {
   return roomList;
 }
 
+// Original Game Board page
+app.get('/original-game-board', (req, res) => {
+  res.sendFile(path.join(__dirname, 'OriginalGameBoard.html'));
+});
+
 // Original board page
 app.get('/original-board', (req, res) => {
   res.send(`
